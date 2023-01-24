@@ -5,6 +5,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import javax.persistence.TypedQuery;
 import java.util.List;
 
 import static jm.task.core.jdbc.util.Util.getSessionFactory;
@@ -56,9 +57,7 @@ public class UserDaoHibernateImpl implements UserDao {
     public void removeUserById(long id) {
         Session session = getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
-        session.createQuery("DELETE User WHERE id = :id")
-                .setParameter("id", id)
-                .executeUpdate();
+        session.delete(session.load(User.class, id));
         transaction.commit();
         session.close();
     }
@@ -66,9 +65,8 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public List<User> getAllUsers() {
         Session session = getSessionFactory().openSession();
-        Transaction transaction = session.beginTransaction();
-        List users = session.createQuery("FROM User").getResultList();
-        transaction.commit();
+        TypedQuery<User> query = session.createQuery("FROM User");
+        List users = query.getResultList();
         session.close();
         return users;
     }
